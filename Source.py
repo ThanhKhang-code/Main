@@ -4,11 +4,11 @@ import time
 from datetime import datetime
 
 # ================= CONFIG =================
-GITHUB_PAT = "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"
+GITHUB_PAT = "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"
 
-FREEZE_URL = "https://raw.githubusercontent.com/bobbytri2272/Main/refs/heads/main/FreezeObfuscated.lua"
-SOURCE_URL = "https://raw.githubusercontent.com/bobbytri2272/Main/refs/heads/main/SourceObfuscated.lua"
-WHITELIST_URL = "https://raw.githubusercontent.com/bobbytri2272/Main/main/Whitelist"
+FREEZE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/FreezeObfuscated.lua"
+SOURCE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/SourceObfuscated.lua"
+WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/main/Whitelist"
 
 XOR_KEY = b"GG_SECRET_KEY"
 LICENSE_KEY = b"MySecretKey123"
