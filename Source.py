@@ -8,7 +8,7 @@ GITHUB_PAT = "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"
 
 FREEZE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/FreezeObfuscated.lua"
 SOURCE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/SourceObfuscated.lua"
-WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/main/Whitelist"
+WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/Whitelist.txt"
 
 XOR_KEY = b"GG_SECRET_KEY"
 LICENSE_KEY = b"MySecretKey123"
