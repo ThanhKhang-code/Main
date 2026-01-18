@@ -10,6 +10,8 @@ FREEZE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/
 SOURCE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/SourceObfuscated.lua"
 WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/main/data/Whitelist.txt"
 
+print("USING WHITELIST URL =", WHITELIST_URL)
+
 XOR_KEY = b"GG_SECRET_KEY"
 LICENSE_KEY = b"MySecretKey123"
 # Duong dan thu muc Output (MuMu Shared Folder)
