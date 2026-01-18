@@ -4,7 +4,6 @@ import time
 from datetime import datetime
 
 # ================= CONFIG =================
-GITHUB_PAT = "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"
 
 FREEZE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/FreezeObfuscated.lua"
 SOURCE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/SourceObfuscated.lua"
@@ -31,12 +30,8 @@ LICENSE_PATH = os.path.join(
 # ==========================================
 
 def github_raw(url):
-    headers = {
-        "Authorization": f"token {GITHUB_PAT}",
-        "Accept": "application/vnd.github.v3.raw"
-    }
     try:
-        r = requests.get(url, headers=headers, timeout=15)
+        r = requests.get(url, timeout=15)
         r.raise_for_status()
         return r.text
     except Exception as e:
