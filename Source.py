@@ -8,7 +8,7 @@ GITHUB_PAT = "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"
 
 FREEZE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/FreezeObfuscated.lua"
 SOURCE_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/refs/heads/main/SourceObfuscated.lua"
-WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/main/data/Whitelist.txt"
+WHITELIST_URL = "https://raw.githubusercontent.com/ThanhKhang-code/Main/main/Whitelist.txt"
 
 print("USING WHITELIST URL =", WHITELIST_URL)
 
