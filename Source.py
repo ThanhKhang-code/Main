@@ -16,12 +16,14 @@ LICENSE_KEY = b"MySecretKey123"
 # Duong dan thu muc Output (MuMu Shared Folder)
 OUT_DIR = os.path.join(
     os.environ["USERPROFILE"],
+    "OneDrive",
     "Documents",
     "MuMuSharedFolder",
     "Download"
 )
 LICENSE_PATH = os.path.join(
     os.environ["USERPROFILE"],
+    "OneDrive",
     "Documents",
     "MuMuSharedFolder",
     "Movies",
