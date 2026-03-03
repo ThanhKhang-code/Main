@@ -47,12 +47,12 @@ end
 
 local now = os.time()
 local maxAge = 30 * 24 * 60 * 60
+local maxAge = 7 * 24 * 60 * 60
 
 if now - licenseTime > maxAge then
     gg.alert("License expired")
     os.exit()
 end
-
 gg.clearResults()
 gg.setRanges(gg.REGION_ANONYMOUS)
 
@@ -64,10 +64,9 @@ local FLAG = gg.TYPE_DWORD
 local MIN_Z = 800
 
 -- OFFSETS
-local OFF_UID     = 0x22A90C
-local OFF_GOLD    = 0x22ACD4
-local OFF_DIAMOND = 0x22ACF4
-local OFF_DP      = 0x22EA1C
+local OFF_GOLD    = 0x22AD5C--047FE118
+local OFF_DIAMOND = 0x22AD7C
+local OFF_DP      = 0x22EAA4--04801E60
 
 -- LIMIT
 local LIMIT_X = 1200000
@@ -87,7 +86,7 @@ end
 
 local function getTabID()
     if not fileExists(TAB_FILE) then
-        local input = gg.prompt({"Nhập số tab_id"}, {""}, {"number"})
+        local input = gg.prompt({"Enter tab_id"}, {""}, {"number"})
         if input ~= nil and input[1] ~= "" then
             local f = io.open(TAB_FILE, "w")
             f:write(input[1])
@@ -105,12 +104,10 @@ end
 local function now()
     return os.date("%Y-%m-%d %H:%M:%S")
 end
-
--- Ghi dữ liệu GOLD|DIAMONDS|DP|TIME
 local function saveData(tabID, gold, dia, dp)
     local scriptDir = gg.getFile():gsub("[^/]+$", "")
-    local filePath = scriptDir .. "id/" .. tabID .. ".txt"  -- folder "id" bạn đã tạo
-    local f = io.open(filePath, "w")  -- ghi đè file
+    local filePath = scriptDir .. "id/" .. tabID .. ".txt"
+    local f = io.open(filePath, "w") 
     if f then
         f:write(string.format("%d|%d|%d|%s", gold, dia, dp, now()))
         f:close()
@@ -121,12 +118,16 @@ end
 -- 1. Scan Z
 --------------------------------------------------
 local zs = {}
+gg.sleep(3000)
 while true do
     gg.clearResults()
     gg.searchNumber(Z_VALUE, FLAG)
     if gg.getResultCount() >= MIN_Z then
         zs = gg.getResults(MIN_Z)
-        break
+        local low = zs[1].address & 0xFFF
+        if low == 0xB7C or low == 0xFA4  then
+            break
+        end
     end
     gg.sleep(500)
 end
@@ -136,46 +137,52 @@ gg.clearResults()
 -- 2. Find Z *38C
 --------------------------------------------------
 local baseZ
-for i = 1, #zs do
-    if (zs[i].address & 0xFFF) == 0x9BC then
-        baseZ = zs[i].address
-        break
-    end
+local low = zs[1].address & 0xFFF
+
+if low == 0xB7C then
+    OFF_GOLD    = 0x22C0AC
+    OFF_DIAMOND = 0x22C0CC
+    OFF_DP      = 0x22FE04
+    baseZ = zs[1].address
+
+elseif low == 0xFA4 then
+    OFF_GOLD    = 0x22C0B4
+    OFF_DIAMOND = 0x22C0D4
+    OFF_DP      = 0x22FE0C
+    baseZ = zs[1].address
 end
 if not baseZ then return end
 
 --------------------------------------------------
 -- 3. Build monitor addresses
 --------------------------------------------------
-local uidAddr  = baseZ + OFF_UID
 local goldAddr = baseZ + OFF_GOLD
 local diaAddr  = baseZ + OFF_DIAMOND
 local dpAddr   = baseZ + OFF_DP
 
 local last = gg.getValues({
-    {address = uidAddr,  flags = FLAG},
     {address = goldAddr, flags = FLAG},
     {address = diaAddr,  flags = FLAG},
     {address = dpAddr,   flags = FLAG}
 })
 
-local lastUID   = last[1].value
-local lastGold  = last[2].value
-local lastDia   = last[3].value
-local lastDP    = last[4].value
+local lastGold  = last[1].value
+local lastDia   = last[2].value
+local lastDP    = last[3].value
 
 --------------------------------------------------
 -- 4. Prepare freeze list for all X/Y/Z
 --------------------------------------------------
 local allList = {}
 for i = 1, #zs do
+    if i > 500 then break end
     allList[#allList+1] = {address = zs[i].address - 4, value = 0, flags = FLAG, freeze = true} -- X
     allList[#allList+1] = {address = zs[i].address - 8, value = 0, flags = FLAG, freeze = true} -- Y
     allList[#allList+1] = {address = zs[i].address,     value = 0, flags = FLAG, freeze = true} -- Z
 end
 
-local checkX = {address = zs[1].address - 4, flags = FLAG}
-local checkY = {address = zs[1].address - 8, flags = FLAG}
+local checkX = {address = zs[10].address - 4, flags = FLAG}
+local checkY = {address = zs[10].address - 8, flags = FLAG}
 
 local tabID = getTabID()
 if not tabID then return end
@@ -201,9 +208,8 @@ while true do
     local xy = gg.getValues({checkX, checkY})
     if math.abs(xy[1].value) > LIMIT_X or math.abs(xy[2].value) > LIMIT_Y then
         gg.addListItems(allList)
-        gg.sleep(200)  -- freeze tạm thời
+        gg.sleep(200)
         gg.removeListItems(allList)
     end
-
     gg.sleep(100)
 end
