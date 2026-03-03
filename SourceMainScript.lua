@@ -47,23 +47,18 @@ end
 
 local now = os.time()
 local maxAge = 30 * 24 * 60 * 60
+local maxAge = 7 * 24 * 60 * 60
 
 if now - licenseTime > maxAge then
     gg.alert("License expired")
     os.exit()
 end
-
 gg.setRanges(gg.REGION_ANONYMOUS)
 gg.clearResults()
 
 local FLAG = gg.TYPE_DWORD
-local Z_VALUE = 4119--0435A9BC
+local Z_VALUE = 4119--045D33BC
 local MIN_Z = 800
-
-local OFF_BALL     = 0x23F044--04599A00
-local OFF_DISTANCE = 0x23F048--04599A04
-local OFF_CAMERA   = 0x171F8C--044CC948
-local OFF_TISO     = 0x2559A8--045B0364
 
 local START_X_POS = 1850000
 local END_X_POS   = 1885000
@@ -78,13 +73,55 @@ local SLEEP_MS      = MOVE_DURATION / MOVE_STEPS
 -- 1. Scan Z ≥ 4119
 ----------------------------------------------------------
 local zs = {}
+local savedList = {}
+
+
 while true do
     gg.clearResults()
     gg.searchNumber(Z_VALUE, FLAG)
+
     if gg.getResultCount() >= MIN_Z then
-        zs = gg.getResults(800)
-        break
+        zs = gg.getResults(MIN_Z)
+
+        local z = zs[1].address
+        local low = z & 0xFFF
+
+        if low == 0xB7C then
+            local OFF_BALL     = 0x23FCBC
+            local OFF_DISTANCE = 0x23FCC0
+            local OFF_CAMERA   = 0x17252C
+            local OFF_TISO     = 0x2566F8
+
+            savedList[1] = {
+                zAddr    = z,
+                xAddr    = z - 4,
+                yAddr    = z - 8,
+                ballAddr = z + OFF_BALL,
+                distAddr = z + OFF_DISTANCE,
+                camAddr  = z + OFF_CAMERA,
+                tisoAddr = z + OFF_TISO
+            }
+            break
+
+        elseif low == 0xFA4 then
+            local OFF_BALL     = 0x23FCC4
+            local OFF_DISTANCE = 0x23FCCA
+            local OFF_CAMERA   = 0x25EB68
+            local OFF_TISO     = 0x256710
+
+            savedList[1] = {
+                zAddr    = z,
+                xAddr    = z - 4,
+                yAddr    = z - 8,
+                ballAddr = z + OFF_BALL,
+                distAddr = z + OFF_DISTANCE,
+                camAddr  = z + OFF_CAMERA,
+                tisoAddr = z + OFF_TISO
+            }
+            break
+        end
     end
+
     gg.sleep(1000)
 end
 
@@ -99,27 +136,6 @@ for i = 1, #zs do
     allList[#allList+1] = {address = zs[i].address - 8, value = 0, flags = FLAG, freeze = true}
     allList[#allList+1] = {address = zs[i].address,     value = 4119, flags = FLAG, freeze = true}
 end
-
-----------------------------------------------------------
--- 2. Filter first 10 Z by *38C pattern
-----------------------------------------------------------
-local savedList = {}
-for i = 1, #zs do
-    local z = zs[i].address
-    if (z & 0xFFF) == 0x9BC then
-        savedList[#savedList + 1] = {
-            zAddr    = z,
-            xAddr    = z - 4,
-            yAddr    = z - 8,
-            ballAddr = z + OFF_BALL,
-            distAddr = z + OFF_DISTANCE,
-            camAddr  = z + OFF_CAMERA,
-            tisoAddr = z + OFF_TISO
-        }
-        if #savedList >= 1 then break end
-    end
-end
-
 ----------------------------------------------------------
 -- 3. Wait for Tiso = 0 → freeze Ball & Distance + control X/Y for all Z
 ----------------------------------------------------------
@@ -127,14 +143,13 @@ while true do
     local tisoVal = gg.getValues({
         {address = savedList[1].tisoAddr, flags = FLAG}
     })[1].value
-
     if tisoVal == 0 then
         break
     end
 
     -- Check XY and freeze = 0 to prevent error at the goal
-    local X = getV(zs[2].address, -4)
-    local Y = getV(zs[2].address, -8)
+    local X = getV(zs[10].address, -4)
+    local Y = getV(zs[10].address, -8)
     if math.abs(X)>1200000 or math.abs(Y) > 1000000 then
         gg.addListItems(allList)
         gg.sleep(500)
@@ -208,13 +223,12 @@ while t<15 do
     end
 end
 while true do
-    local X = getV(zs[2].address, -4)
-    local Y = getV(zs[2].address, -8)
+    local X = getV(zs[10].address, -4)
+    local Y = getV(zs[10].address, -8)
     if math.abs(X)>1200000 or math.abs(Y) > 1000000 then
         gg.addListItems(allList)
         gg.sleep(1000)
         gg.removeListItems(allList)
-    else
-        gg.sleep(200)
     end
+    gg.sleep(200)
 end
